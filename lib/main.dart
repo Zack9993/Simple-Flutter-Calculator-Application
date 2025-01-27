@@ -8,7 +8,7 @@ class CalculatorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Responsive Calculator',
+      title: 'Advanced Responsive Calculator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -27,21 +27,41 @@ class CalculatorScreen extends StatefulWidget {
   _CalculatorScreenState createState() => _CalculatorScreenState();
 }
 
-class _CalculatorScreenState extends State<CalculatorScreen> {
+class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerProviderStateMixin {
   String output = "0";
   String _output = "0";
   double num1 = 0;
   double num2 = 0;
   String operand = "";
   bool isDarkMode = false;
+  List<String> history = [];
+  late AnimationController _animationController;
+  late Animation<Color?> _buttonColorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200),
+    );
+    _buttonColorAnimation = ColorTween(
+      begin: Colors.blue,
+      end: Colors.blueAccent,
+    ).animate(_animationController);
+  }
 
   void buttonPressed(String buttonText) {
+    _animationController.forward().then((_) {
+      _animationController.reverse();
+    });
+
     if (buttonText == "C") {
       _output = "0";
       num1 = 0;
       num2 = 0;
       operand = "";
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "x" || buttonText == "/" || buttonText == "%" || buttonText == "√") {
+    } else if (buttonText == "+" || buttonText == "-" || buttonText == "x" || buttonText == "/" || buttonText == "%" || buttonText == "√" || buttonText == "^" || buttonText == "!") {
       num1 = double.parse(output);
       operand = buttonText;
       _output = "0";
@@ -77,8 +97,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         case "√":
           _output = (num1 * num1).toString();
           break;
+        case "^":
+          _output = (num1 * num1 * num1).toString();
+          break;
+        case "!":
+          _output = factorial(num1.toInt()).toString();
+          break;
       }
 
+      history.add("$num1 $operand $num2 = $_output");
       num1 = 0;
       num2 = 0;
       operand = "";
@@ -97,24 +124,34 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
+  int factorial(int n) {
+    if (n == 0 || n == 1) return 1;
+    return n * factorial(n - 1);
+  }
+
   Widget buildButton(String buttonText, {Color? color}) {
     return Flexible(
       flex: 1,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color ?? Theme.of(context).primaryColor,
-            padding: EdgeInsets.all(24.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-          ),
-          onPressed: () => buttonPressed(buttonText),
-          child: Text(
-            buttonText,
-            style: TextStyle(fontSize: 24.0, color: Colors.white),
-          ),
+        child: AnimatedBuilder(
+          animation: _buttonColorAnimation,
+          builder: (context, child) {
+            return ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color ?? _buttonColorAnimation.value,
+                padding: EdgeInsets.all(24.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+              onPressed: () => buttonPressed(buttonText),
+              child: Text(
+                buttonText,
+                style: TextStyle(fontSize: 24.0, color: Colors.white),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -128,7 +165,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Responsive Calculator'),
+        title: Text('Advanced Responsive Calculator'),
         actions: [
           IconButton(
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
@@ -140,8 +177,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           ),
         ],
       ),
-      body: Theme(
+      body: AnimatedTheme(
         data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+        duration: Duration(milliseconds: 500),
         child: Container(
           padding: EdgeInsets.all(16.0),
           child: Column(
@@ -210,11 +248,37 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         children: [
                           buildButton("√", color: Colors.green),
                           buildButton("%", color: Colors.green),
+                          buildButton("^", color: Colors.green),
+                          buildButton("!", color: Colors.green),
                           buildButton("=", color: Colors.blue),
                         ],
                       ),
                     ),
                   ],
+                ),
+              ),
+              Divider(),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "History",
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: history.length,
+                          itemBuilder: (context, index) {
+                            return Text(history[index]);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
