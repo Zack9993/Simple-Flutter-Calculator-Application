@@ -5,12 +5,10 @@ void main() {
 }
 
 class CalculatorApp extends StatelessWidget {
-  const CalculatorApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Advanced Calculator',
+      title: 'Responsive Calculator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -25,13 +23,11 @@ class CalculatorApp extends StatelessWidget {
 }
 
 class CalculatorScreen extends StatefulWidget {
-  const CalculatorScreen({super.key});
-
   @override
-  CalculatorScreenState createState() => CalculatorScreenState();
+  _CalculatorScreenState createState() => _CalculatorScreenState();
 }
 
-class CalculatorScreenState extends State<CalculatorScreen> {
+class _CalculatorScreenState extends State<CalculatorScreen> {
   String output = "0";
   String _output = "0";
   double num1 = 0;
@@ -102,7 +98,8 @@ class CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   Widget buildButton(String buttonText, {Color? color}) {
-    return Expanded(
+    return Flexible(
+      flex: 1,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
@@ -125,9 +122,13 @@ class CalculatorScreenState extends State<CalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isPortrait = screenHeight > screenWidth;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Advanced Calculator'),
+        title: Text('Responsive Calculator'),
         actions: [
           IconButton(
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
@@ -146,58 +147,75 @@ class CalculatorScreenState extends State<CalculatorScreen> {
           child: Column(
             children: <Widget>[
               Expanded(
+                flex: 2,
                 child: Container(
                   alignment: Alignment.bottomRight,
                   padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 12.0),
-                  child: Text(
-                    output,
-                    style: TextStyle(fontSize: 48.0, fontWeight: FontWeight.bold),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      output,
+                      style: TextStyle(fontSize: isPortrait ? 48.0 : 36.0, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),
               Divider(),
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      buildButton("7"),
-                      buildButton("8"),
-                      buildButton("9"),
-                      buildButton("/", color: Colors.orange),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      buildButton("4"),
-                      buildButton("5"),
-                      buildButton("6"),
-                      buildButton("x", color: Colors.orange),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      buildButton("1"),
-                      buildButton("2"),
-                      buildButton("3"),
-                      buildButton("-", color: Colors.orange),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      buildButton("."),
-                      buildButton("0"),
-                      buildButton("C", color: Colors.red),
-                      buildButton("+", color: Colors.orange),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      buildButton("√", color: Colors.green),
-                      buildButton("%", color: Colors.green),
-                      buildButton("=", color: Colors.blue),
-                    ],
-                  ),
-                ],
+              Expanded(
+                flex: isPortrait ? 6 : 4,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          buildButton("7"),
+                          buildButton("8"),
+                          buildButton("9"),
+                          buildButton("/", color: Colors.orange),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          buildButton("4"),
+                          buildButton("5"),
+                          buildButton("6"),
+                          buildButton("x", color: Colors.orange),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          buildButton("1"),
+                          buildButton("2"),
+                          buildButton("3"),
+                          buildButton("-", color: Colors.orange),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          buildButton("."),
+                          buildButton("0"),
+                          buildButton("C", color: Colors.red),
+                          buildButton("+", color: Colors.orange),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          buildButton("√", color: Colors.green),
+                          buildButton("%", color: Colors.green),
+                          buildButton("=", color: Colors.blue),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
