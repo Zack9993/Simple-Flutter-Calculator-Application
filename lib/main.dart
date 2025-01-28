@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 void main() {
   runApp(CalculatorApp());
@@ -8,7 +9,7 @@ class CalculatorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Advanced Responsive Calculator',
+      title: 'Ultimate Calculator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -37,6 +38,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
   List<String> history = [];
   late AnimationController _animationController;
   late Animation<Color?> _buttonColorAnimation;
+  late Animation<double> _buttonScaleAnimation;
 
   @override
   void initState() {
@@ -49,6 +51,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       begin: Colors.blue,
       end: Colors.blueAccent,
     ).animate(_animationController);
+    _buttonScaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   void buttonPressed(String buttonText) {
@@ -61,7 +69,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       num1 = 0;
       num2 = 0;
       operand = "";
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "x" || buttonText == "/" || buttonText == "%" || buttonText == "√" || buttonText == "^" || buttonText == "!") {
+    } else if (buttonText == "+" || buttonText == "-" || buttonText == "x" || buttonText == "/" || buttonText == "%" || buttonText == "√" || buttonText == "^" || buttonText == "!" || buttonText == "sin" || buttonText == "cos" || buttonText == "tan" || buttonText == "log") {
       num1 = double.parse(output);
       operand = buttonText;
       _output = "0";
@@ -95,13 +103,25 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
           _output = (num1 % num2).toString();
           break;
         case "√":
-          _output = (num1 * num1).toString();
+          _output = (math.sqrt(num1)).toString();
           break;
         case "^":
-          _output = (num1 * num1 * num1).toString();
+          _output = (math.pow(num1, num2)).toString();
           break;
         case "!":
           _output = factorial(num1.toInt()).toString();
+          break;
+        case "sin":
+          _output = (math.sin(num1)).toString();
+          break;
+        case "cos":
+          _output = (math.cos(num1)).toString();
+          break;
+        case "tan":
+          _output = (math.tan(num1)).toString();
+          break;
+        case "log":
+          _output = (math.log(num1)).toString();
           break;
       }
 
@@ -109,12 +129,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       num1 = 0;
       num2 = 0;
       operand = "";
-    } else if (buttonText == "√") {
-      num1 = double.parse(output);
-      _output = (num1 * num1).toString();
-    } else if (buttonText == "%") {
-      num1 = double.parse(output);
-      _output = (num1 / 100).toString();
     } else {
       _output = _output == "0" ? buttonText : _output + buttonText;
     }
@@ -129,26 +143,35 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
     return n * factorial(n - 1);
   }
 
+  void clearHistory() {
+    setState(() {
+      history.clear();
+    });
+  }
+
   Widget buildButton(String buttonText, {Color? color}) {
     return Flexible(
       flex: 1,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: AnimatedBuilder(
-          animation: _buttonColorAnimation,
+          animation: _buttonScaleAnimation,
           builder: (context, child) {
-            return ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color ?? _buttonColorAnimation.value,
-                padding: EdgeInsets.all(24.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
+            return Transform.scale(
+              scale: _buttonScaleAnimation.value,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color ?? _buttonColorAnimation.value,
+                  padding: EdgeInsets.all(24.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
                 ),
-              ),
-              onPressed: () => buttonPressed(buttonText),
-              child: Text(
-                buttonText,
-                style: TextStyle(fontSize: 24.0, color: Colors.white),
+                onPressed: () => buttonPressed(buttonText),
+                child: Text(
+                  buttonText,
+                  style: TextStyle(fontSize: 24.0, color: Colors.white),
+                ),
               ),
             );
           },
@@ -165,7 +188,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Advanced Responsive Calculator'),
+        title: Text('Ultimate Calculator'),
         actions: [
           IconButton(
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
@@ -210,6 +233,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                           buildButton("8"),
                           buildButton("9"),
                           buildButton("/", color: Colors.orange),
+                          buildButton("sin", color: Colors.purple),
                         ],
                       ),
                     ),
@@ -220,6 +244,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                           buildButton("5"),
                           buildButton("6"),
                           buildButton("x", color: Colors.orange),
+                          buildButton("cos", color: Colors.purple),
                         ],
                       ),
                     ),
@@ -230,6 +255,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                           buildButton("2"),
                           buildButton("3"),
                           buildButton("-", color: Colors.orange),
+                          buildButton("tan", color: Colors.purple),
                         ],
                       ),
                     ),
@@ -240,6 +266,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                           buildButton("0"),
                           buildButton("C", color: Colors.red),
                           buildButton("+", color: Colors.orange),
+                          buildButton("log", color: Colors.purple),
                         ],
                       ),
                     ),
@@ -265,9 +292,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "History",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "History",
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          TextButton(
+                            onPressed: clearHistory,
+                            child: Text(
+                              "Clear History",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
                       Expanded(
                         child: ListView.builder(
