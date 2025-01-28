@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // For haptic feedback and clipboard
 import 'dart:math' as math;
 
 void main() {
@@ -60,6 +61,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
   }
 
   void buttonPressed(String buttonText) {
+    // Haptic feedback
+    HapticFeedback.lightImpact();
+
     _animationController.forward().then((_) {
       _animationController.reverse();
     });
@@ -69,7 +73,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       num1 = 0;
       num2 = 0;
       operand = "";
-    } else if (buttonText == "+" || buttonText == "-" || buttonText == "x" || buttonText == "/" || buttonText == "%" || buttonText == "√" || buttonText == "^" || buttonText == "!" || buttonText == "sin" || buttonText == "cos" || buttonText == "tan" || buttonText == "log") {
+    } else if (buttonText == "+" || buttonText == "-" || buttonText == "x" || buttonText == "/" || buttonText == "%" || buttonText == "√" || buttonText == "^" || buttonText == "!" || buttonText == "sin" || buttonText == "cos" || buttonText == "tan" || buttonText == "asin" || buttonText == "acos" || buttonText == "atan" || buttonText == "log") {
       num1 = double.parse(output);
       operand = buttonText;
       _output = "0";
@@ -120,6 +124,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
         case "tan":
           _output = (math.tan(num1)).toString();
           break;
+        case "asin":
+          _output = (math.asin(num1)).toString();
+          break;
+        case "acos":
+          _output = (math.acos(num1)).toString();
+          break;
+        case "atan":
+          _output = (math.atan(num1)).toString();
+          break;
         case "log":
           _output = (math.log(num1)).toString();
           break;
@@ -147,6 +160,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
     setState(() {
       history.clear();
     });
+  }
+
+  void copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: output));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Copied to clipboard!")),
+    );
   }
 
   Widget buildButton(String buttonText, {Color? color}) {
@@ -190,6 +210,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       appBar: AppBar(
         title: Text('Ultimate Calculator'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.content_copy),
+            onPressed: copyToClipboard,
+          ),
           IconButton(
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
             onPressed: () {
@@ -278,6 +302,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                           buildButton("^", color: Colors.green),
                           buildButton("!", color: Colors.green),
                           buildButton("=", color: Colors.blue),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          buildButton("asin", color: Colors.purple),
+                          buildButton("acos", color: Colors.purple),
+                          buildButton("atan", color: Colors.purple),
                         ],
                       ),
                     ),
